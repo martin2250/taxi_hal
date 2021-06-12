@@ -32,6 +32,9 @@ def write(i2c_addr: int, sub_addr: int, data: bytes):
             word_2 |= data[2]
         smc.write_16(_I2C_WORD_2, word_2)
     smc.write_16(_I2C_START, 0x1)
+    # wait for transaction to finish
+    while smc.read_16(_I2C_IDLE) == 0:
+        time.sleep(1e-4)
 
 def read(i2c_addr: int, sub_addr: int, count: int):
     """Read one or two bytes from I2C client"""
