@@ -31,3 +31,5 @@ class TaxiFanoutBoard:
     
     def get_udaq_power(self) -> int:
         return self.ic6.get_output(PCA9555A.PORT_0)
+
+

@@ -1,5 +1,8 @@
 from . import smc
 import time
+import logging
+
+logger = logging.getLogger(__name__)
 
 _I2C_WORD_0 = 0x1500
 _I2C_WORD_1 = 0x1502
@@ -22,6 +25,7 @@ def write(i2c_addr: int, sub_addr: int, data: bytes):
     """Write one to three bytes to I2C client"""
     if len(data) > 3 or len(data) < 1:
         raise ValueError('data length not in between 1 and 3')
+    logger.debug(f'write to [0x{i2c_addr:02X}][0x{sub_addr:02X}] <= ' + ' '.join(f'0x{v:02X}' for v in data))
     command = 0x80 | ((len(data) - 1) << 1)
     # mask away R/W bit
     smc.write_16(_I2C_WORD_0, (command << 8) | (i2c_addr & 0xfe))
@@ -49,7 +53,6 @@ def read(i2c_addr: int, sub_addr: int, count: int):
     while smc.read_16(_I2C_IDLE) == 0:
         time.sleep(1e-4)
     data_reg = smc.read_16(_I2C_READ)
-    print(f'data reg 0x{data_reg:04X}')
     if count == 1:
         return bytes([data_reg & 0xff])
     elif count == 2:
