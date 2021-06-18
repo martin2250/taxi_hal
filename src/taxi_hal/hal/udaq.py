@@ -1,6 +1,8 @@
 from dataclasses import dataclass, field
+
 # from cobs import cobs
 from . import smc
+
 
 @dataclass
 class UDaqAdcConfig:
@@ -68,6 +70,7 @@ class UDaq:
             self.set_adc_config(*adc)
         self.send_line('SET_LIVETIME_ENABLE 1')
 
+
 class Taxi:
     def get_buildinfo(self) -> str:
         year = smc.read_16(8)
@@ -75,5 +78,3 @@ class Taxi:
         day = smc.read_16(12)
         version = smc.read_16(14)
         return f'{year:04X}-{month:02X}-{day:02X} v{version:04X}'
-
-

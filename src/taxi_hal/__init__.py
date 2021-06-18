@@ -1,1 +1,1 @@
-from . import smc, i2c, pca9555a, taxi_fanout
+from .hal import i2c, pca9555a, smc, taxi_fanout

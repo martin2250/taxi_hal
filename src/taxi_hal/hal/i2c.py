@@ -1,6 +1,7 @@
-from . import smc
-import time
 import logging
+import time
+
+from . import smc
 
 logger = logging.getLogger(__name__)
 
@@ -21,11 +22,13 @@ _I2C_IDLE = 0x150a
 # - third byte: i2c 'subaddress'
 # - fourth byte...: i2c data
 
+
 def write(i2c_addr: int, sub_addr: int, data: bytes):
     """Write one to three bytes to I2C client"""
     if len(data) > 3 or len(data) < 1:
         raise ValueError('data length not in between 1 and 3')
-    logger.debug(f'write to [0x{i2c_addr:02X}][0x{sub_addr:02X}] <= ' + ' '.join(f'0x{v:02X}' for v in data))
+    logger.debug(f'write to [0x{i2c_addr:02X}][0x{sub_addr:02X}] <= ' +
+                 ' '.join(f'0x{v:02X}' for v in data))
     command = 0x80 | ((len(data) - 1) << 1)
     # mask away R/W bit
     smc.write_16(_I2C_WORD_0, (command << 8) | (i2c_addr & 0xfe))
@@ -39,6 +42,7 @@ def write(i2c_addr: int, sub_addr: int, data: bytes):
     # wait for transaction to finish
     while smc.read_16(_I2C_IDLE) == 0:
         time.sleep(1e-4)
+
 
 def read(i2c_addr: int, sub_addr: int, count: int):
     """Read one or two bytes from I2C client"""
