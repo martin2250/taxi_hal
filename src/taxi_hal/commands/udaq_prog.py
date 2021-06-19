@@ -35,6 +35,13 @@ def build_bitmask(channels: list[int]) -> int:
         mask |= 1 << chan
     return mask
 
+def decode_bitmask(mask: int) -> list[int]:
+    channels = []
+    for i in range(7):
+        if (mask & 0x01) != 0:
+            channels.append(str(i))
+        mask >>= 1
+    return channels
 
 FLASH_ADDR = 0x08000000
 
@@ -42,7 +49,7 @@ FLASH_ADDR = 0x08000000
 class CmdUdaqPower:
     def build_parser(parser: argparse.ArgumentParser):
         parser.add_argument('task',
-                            choices=('on', 'off', 'read'))
+                            choices=('on', 'off', 'read', 'check'))
         parser.add_argument('--channels',
                             help='uDAQs channels, eg. "0-3,7"',
                             type=udaq_channel)
@@ -53,21 +60,29 @@ class CmdUdaqPower:
         # check current status
         power = fan.get_udaq_power()
         # read? print status and exit
-        if task == 'read':
+        if task == 'read' or task == 'check':
             if power == 0:
                 print('no channels are currently powered on')
                 return True
-            channels = []
-            temp = power
-            for i in range(7):
-                if (temp & 0x01) != 0:
-                    channels.append(str(i))
-                temp >>= 1
-            channels = ','.join(channels)
-            s = "s" if len(channels) > 1 else ""
-            are = "are" if len(channels) > 1 else "is"
+            channels = ','.join(decode_bitmask(power))
+            s = 's' if len(channels) > 1 else ''
+            are = 'are' if len(channels) > 1 else 'is'
             print(f'channel{s} {channels} {are} currently powered on')
+            # also check the power status
+            if task == 'check':
+                pwr_ok = fan.get_power_mon()
+                pwr_fail = power & (~pwr_ok)
+                if pwr_fail == 0:
+                    print('no overcurrent')
+                else:
+                    channels = ','.join(decode_bitmask(pwr_fail))
+                    s = 's' if len(channels) > 1 else ''
+                    print(f'overcurrent on channel{s} {channels}')
             return True
+        # check --channels
+        if not channels:
+            print('you need to provide the --channel argument')
+            return False
         # power off all channels (to reboot uDAQs)
         mask = build_bitmask(channels)
         if (power & mask) != 0:
