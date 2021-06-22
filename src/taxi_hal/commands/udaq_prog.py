@@ -16,7 +16,7 @@ def udaq_channel(desc: str) -> list[str]:
         if '-' in part:
             start, _, stop = part.partition('-')
             for i in range(int(start), int(stop) + 1):
-                if i not in range(7):
+                if i not in range(8):
                     raise ValueError(f'channel {i} is out of range')
                 channels.add(i)
         else:
