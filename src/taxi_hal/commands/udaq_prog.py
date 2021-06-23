@@ -21,7 +21,7 @@ def udaq_channel(desc: str) -> list[str]:
                 channels.add(i)
         else:
             i = int(part)
-            if i not in range(7):
+            if i not in range(8):
                 raise ValueError(f'channel {i} is out of range')
             channels.add(i)
     channels = list(channels)
